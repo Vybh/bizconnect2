@@ -555,3 +555,14 @@ input, select, textarea {
 .str-video__call-controls button:hover {
   background: rgba(255,255,255,0.4) !important;
 }
+
+.str-video__call-controls__button svg,
+.str-video__call-controls__button span {
+  display: none !important;
+}
+
+.str-video__composite-button--mic::after { content: "🎤"; font-size: 20px; }
+.str-video__composite-button--camera::after { content: "📷"; font-size: 20px; }
+.str-video__composite-button--screen-share::after { content: "🖥️"; font-size: 20px; }
+.str-video__composite-button--leave::after { content: "📵"; font-size: 20px; }
+.str-video__composite-button--reactions::after { content: "😊"; font-size: 20px; }
