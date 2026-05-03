@@ -1,5 +1,7 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
+import { BrowserRouter } from "react-router-dom";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import * as Sentry from "@sentry/react";
 import App from "./App.jsx";
 import "./index.css";
@@ -10,9 +12,15 @@ Sentry.init({
   environment: import.meta.env.MODE,
 });
 
+const queryClient = new QueryClient();
+
 const root = createRoot(document.getElementById("root"));
 root.render(
   <StrictMode>
-    <App />
+    <BrowserRouter>
+      <QueryClientProvider client={queryClient}>
+        <App />
+      </QueryClientProvider>
+    </BrowserRouter>
   </StrictMode>
 );
