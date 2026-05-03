@@ -16,6 +16,7 @@ import {
   MessageList,
   MessageInput,
   Window,
+  useMessageContext,
 } from "stream-chat-react";
 import "stream-chat-react/dist/css/v2/index.css";
 import { Mic, MicOff, Video, VideoOff, PhoneOff, MonitorUp, MonitorOff } from "lucide-react";
@@ -71,7 +72,8 @@ function CustomCallControls() {
   );
 }
 
-function AutoTranslatedMessage({ message, authUser }) {
+function AutoTranslatedMessage({ authUser }) {
+  const { message } = useMessageContext();
   const [translated, setTranslated] = useState(null);
 
   useEffect(() => {
@@ -86,7 +88,7 @@ function AutoTranslatedMessage({ message, authUser }) {
       } catch {}
     }
     autoTranslate();
-  }, [message.text, authUser?.nativeLanguage, message.user?.nativeLanguage]);
+  }, [message?.text, authUser?.nativeLanguage, message?.user?.nativeLanguage]);
 
   if (!message?.text) return null;
 
