@@ -100,7 +100,7 @@ export default function ChatPage() {
       try {
         if (!streamClient.userID) {
           await streamClient.connectUser(
-            { id: authUser._id, name: authUser.fullName, image: authUser.profilePic },
+            { id: authUser._id, name: authUser.fullName, image: authUser.profilePic, nativeLanguage: authUser.nativeLanguage },
             tokenData.token
           );
         }
