@@ -31,7 +31,7 @@ function TranslateButton({ message }) {
       setLoading(true);
       const res = await translateText({
         text: message.text,
-        sourceLang: "auto",
+        sourceLang: "en",
         targetLang: navigator.language?.split("-")[0] || "en",
       });
       setTranslated(res.data.translatedText);
