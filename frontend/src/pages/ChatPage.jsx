@@ -23,43 +23,29 @@ const streamClient = StreamChat.getInstance(import.meta.env.VITE_STREAM_API_KEY)
 
 function TranslateButton({ message, authUser }) {
   const [translated, setTranslated] = useState(null);
-  const [loading, setLoading] = useState(false);
 
-  async function handleTranslate() {
-    if (translated) { setTranslated(null); return; }
-    try {
-      setLoading(true);
-      const res = await translateText({
-        text: message.text,
-        sourceLang: "en",
-        targetLang: authUser?.nativeLanguage || "en",
-      });
-      setTranslated(res.data.translatedText);
-    } catch {
-      toast.error("Translation failed");
-    } finally {
-      setLoading(false);
+  useEffect(() => {
+    const targetLang = authUser?.nativeLanguage || "en";
+    const sourceLang = message.user?.nativeLanguage || "en";
+    if (!message.text || sourceLang === targetLang) return;
+    async function autoTranslate() {
+      try {
+        const res = await translateText({ text: message.text, sourceLang, targetLang });
+        setTranslated(res.data.translatedText);
+      } catch {
+        // silent fail
+      }
     }
-  }
+    autoTranslate();
+  }, [message.text, authUser?.nativeLanguage, message.user?.nativeLanguage]);
 
   if (!message.text) return null;
 
-  return (
-    <div>
-      {translated && (
-        <p style={{ marginTop: "0.25rem", fontSize: "0.8rem", color: "var(--text-muted)", fontStyle: "italic" }}>
-          {translated}
-        </p>
-      )}
-      <button
-        onClick={handleTranslate}
-        style={{ background: "none", border: "none", cursor: "pointer", color: "var(--text-muted)", padding: "0.125rem 0", fontSize: "0.75rem", display: "flex", alignItems: "center", gap: "0.25rem" }}
-      >
-        <Languages size={12} />
-        {loading ? "…" : translated ? "Hide" : "Translate"}
-      </button>
-    </div>
-  );
+  return translated ? (
+    <p style={{ marginTop: "0.25rem", fontSize: "0.8rem", color: "var(--text-muted)", fontStyle: "italic" }}>
+      {translated}
+    </p>
+  ) : null;
 }
 
 function CustomMessage({ authUser }) {
