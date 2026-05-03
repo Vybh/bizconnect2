@@ -9,91 +9,103 @@ import {
   useCallStateHooks,
 } from "@stream-io/video-react-sdk";
 import "@stream-io/video-react-sdk/dist/css/styles.css";
+import { StreamChat } from "stream-chat";
+import {
+  Chat,
+  Channel,
+  MessageList,
+  MessageInput,
+  Window,
+} from "stream-chat-react";
+import "stream-chat-react/dist/css/v2/index.css";
 import { Mic, MicOff, Video, VideoOff, PhoneOff, MonitorUp, MonitorOff } from "lucide-react";
 import { getChatToken } from "../lib/api.js";
 import { useAuthUser } from "../hooks/useAuthUser.js";
 import toast from "react-hot-toast";
 
+const streamChatClient = StreamChat.getInstance(import.meta.env.VITE_STREAM_API_KEY);
+
 function CustomCallControls() {
-  const { useMicrophoneState, useCameraState, useCallCallingState } = useCallStateHooks();
+  const { useMicrophoneState, useCameraState, useScreenShareState } = useCallStateHooks();
   const { microphone, isMute: isMicMuted } = useMicrophoneState();
   const { camera, isMute: isCamMuted } = useCameraState();
-  const callingState = useCallCallingState();
+  const { screenShare, isMute: isScreenOff } = useScreenShareState();
 
   async function toggleMic() {
     try { await microphone.toggle(); } catch { toast.error("Could not toggle mic"); }
   }
-
   async function toggleCam() {
     try { await camera.toggle(); } catch { toast.error("Could not toggle camera"); }
   }
-
-  const { useScreenShareState } = useCallStateHooks();
-  const { screenShare, isMute: isScreenOff } = useScreenShareState();
-
   async function toggleScreen() {
     try { await screenShare.toggle(); } catch { toast.error("Could not toggle screen share"); }
   }
-
   async function leaveCall() {
     try { window.close(); } catch { window.history.back(); }
   }
 
+  const btnStyle = (bg) => ({
+    width: 48, height: 48, borderRadius: "50%",
+    background: bg, border: "none", cursor: "pointer", color: "white",
+    display: "flex", alignItems: "center", justifyContent: "center",
+  });
+
   return (
     <div style={{
-      display: "flex",
-      justifyContent: "center",
-      alignItems: "center",
-      gap: "1.5rem",
-      padding: "1.5rem",
-      background: "rgba(0,0,0,0.85)",
+      display: "flex", justifyContent: "center", alignItems: "center",
+      gap: "1rem", padding: "1rem", background: "rgba(0,0,0,0.85)",
     }}>
-      <button onClick={toggleMic} style={{
-        width: 56, height: 56, borderRadius: "50%",
-        background: isMicMuted ? "#ef4444" : "rgba(255,255,255,0.2)",
-        border: "none", cursor: "pointer", color: "white",
-        display: "flex", alignItems: "center", justifyContent: "center",
-      }}>
-        {isMicMuted ? <MicOff size={22} /> : <Mic size={22} />}
+      <button onClick={toggleMic} style={btnStyle(isMicMuted ? "#ef4444" : "rgba(255,255,255,0.2)")}>
+        {isMicMuted ? <MicOff size={20} /> : <Mic size={20} />}
       </button>
-
-      <button onClick={toggleCam} style={{
-        width: 56, height: 56, borderRadius: "50%",
-        background: isCamMuted ? "#ef4444" : "rgba(255,255,255,0.2)",
-        border: "none", cursor: "pointer", color: "white",
-        display: "flex", alignItems: "center", justifyContent: "center",
-      }}>
-        {isCamMuted ? <VideoOff size={22} /> : <Video size={22} />}
+      <button onClick={toggleCam} style={btnStyle(isCamMuted ? "#ef4444" : "rgba(255,255,255,0.2)")}>
+        {isCamMuted ? <VideoOff size={20} /> : <Video size={20} />}
       </button>
-
-      <button onClick={toggleScreen} style={{
-        width: 56, height: 56, borderRadius: "50%",
-        background: !isScreenOff ? "#3b82f6" : "rgba(255,255,255,0.2)",
-        border: "none", cursor: "pointer", color: "white",
-        display: "flex", alignItems: "center", justifyContent: "center",
-      }}>
-        {!isScreenOff ? <MonitorOff size={22} /> : <MonitorUp size={22} />}
+      <button onClick={toggleScreen} style={btnStyle(!isScreenOff ? "#3b82f6" : "rgba(255,255,255,0.2)")}>
+        {!isScreenOff ? <MonitorOff size={20} /> : <MonitorUp size={20} />}
       </button>
-
-      <button onClick={leaveCall} style={{
-        width: 56, height: 56, borderRadius: "50%",
-        background: "#ef4444",
-        border: "none", cursor: "pointer", color: "white",
-        display: "flex", alignItems: "center", justifyContent: "center",
-      }}>
-        <PhoneOff size={22} />
+      <button onClick={leaveCall} style={btnStyle("#ef4444")}>
+        <PhoneOff size={20} />
       </button>
     </div>
   );
 }
 
-function ActiveCall() {
+function ActiveCall({ channel }) {
   return (
-    <div style={{ height: "100vh", display: "flex", flexDirection: "column", background: "#000" }}>
-      <div style={{ flex: 1, overflow: "hidden" }}>
-        <SpeakerLayout participantsBarPosition="bottom" />
+    <div style={{ display: "flex", height: "100vh", background: "#000" }}>
+      {/* Video section */}
+      <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
+        <div style={{ flex: 1, overflow: "hidden" }}>
+          <SpeakerLayout participantsBarPosition="bottom" />
+        </div>
+        <CustomCallControls />
       </div>
-      <CustomCallControls />
+
+      {/* Chat sidebar */}
+      {channel && (
+        <div style={{
+          width: 320, background: "#1a1a2e", display: "flex",
+          flexDirection: "column", borderLeft: "1px solid rgba(255,255,255,0.1)",
+        }}>
+          <div style={{
+            padding: "1rem", borderBottom: "1px solid rgba(255,255,255,0.1)",
+            color: "white", fontWeight: 600, fontSize: "0.9rem",
+          }}>
+            💬 In-Call Chat
+          </div>
+          <div style={{ flex: 1, overflow: "hidden" }}>
+            <Chat client={streamChatClient} theme="str-chat__theme-dark">
+              <Channel channel={channel}>
+                <Window>
+                  <MessageList />
+                  <MessageInput />
+                </Window>
+              </Channel>
+            </Chat>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -103,6 +115,7 @@ export default function CallPage() {
   const { authUser } = useAuthUser();
   const [videoClient, setVideoClient] = useState(null);
   const [call, setCall] = useState(null);
+  const [channel, setChannel] = useState(null);
 
   const { data: tokenData } = useQuery({
     queryKey: ["chatToken"],
@@ -113,39 +126,54 @@ export default function CallPage() {
   useEffect(() => {
     if (!tokenData?.token || !authUser) return;
 
+    // Setup video
     const client = new StreamVideoClient({
       apiKey: import.meta.env.VITE_STREAM_API_KEY,
       user: { id: authUser._id, name: authUser.fullName, image: authUser.profilePic },
       token: tokenData.token,
     });
-
     const callInstance = client.call("default", callId);
     callInstance.join({ create: true }).catch((err) => {
       toast.error("Failed to join call");
       console.error(err);
     });
-
     setVideoClient(client);
     setCall(callInstance);
+
+    // Setup chat — reuse the same channel as the chat page
+    async function setupChat() {
+      try {
+        if (!streamChatClient.userID) {
+          await streamChatClient.connectUser(
+            { id: authUser._id, name: authUser.fullName, image: authUser.profilePic },
+            tokenData.token
+          );
+        }
+        // callId is "userId1-userId2", reuse it as channel id
+        const ch = streamChatClient.channel("messaging", callId);
+        await ch.watch();
+        setChannel(ch);
+      } catch (err) {
+        console.error("Chat setup failed:", err);
+      }
+    }
+    setupChat();
 
     return () => {
       callInstance.leave().catch(() => {});
       client.disconnectUser().catch(() => {});
+      streamChatClient.disconnectUser().catch(() => {});
     };
   }, [tokenData, authUser, callId]);
 
   if (!videoClient || !call) {
-    return (
-      <div className="loading-screen">
-        <div className="spinner" />
-      </div>
-    );
+    return <div className="loading-screen"><div className="spinner" /></div>;
   }
 
   return (
     <StreamVideo client={videoClient}>
       <StreamCall call={call}>
-        <ActiveCall />
+        <ActiveCall channel={channel} />
       </StreamCall>
     </StreamVideo>
   );
