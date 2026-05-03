@@ -18,10 +18,21 @@ Sentry.init({
 
 const app = express();
 
+const allowedOrigins = [
+  process.env.FRONTEND_URL || "http://localhost:5173",
+  /https:\/\/bizconnect2.*\.vercel\.app$/,
+];
+
 app.use(helmet());
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL || "http://localhost:5173",
+    origin: (origin, callback) => {
+      if (!origin) return callback(null, true);
+      const allowed = allowedOrigins.some((o) =>
+        typeof o === "string" ? o === origin : o.test(origin)
+      );
+      allowed ? callback(null, true) : callback(new Error("Not allowed by CORS"));
+    },
     credentials: true,
   })
 );
