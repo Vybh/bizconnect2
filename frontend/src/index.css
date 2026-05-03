@@ -511,3 +511,21 @@ input, select, textarea {
   display: flex;
   flex-direction: column;
 }
+
+.call-page {
+  height: 100vh;
+  width: 100vw;
+  background: #000;
+  display: flex;
+  flex-direction: column;
+}
+
+.call-page .str-video {
+  height: 100%;
+  width: 100%;
+}
+
+.call-page .str-video__call {
+  height: 100%;
+  width: 100%;
+}
