@@ -75,9 +75,10 @@ function AutoTranslatedMessage({ message, authUser }) {
   const [translated, setTranslated] = useState(null);
 
   useEffect(() => {
+    if (!message?.text) return;
     const targetLang = authUser?.nativeLanguage || "en";
     const sourceLang = message.user?.nativeLanguage || "en";
-    if (!message.text || sourceLang === targetLang) return;
+    if (sourceLang === targetLang) return;
     async function autoTranslate() {
       try {
         const res = await translateText({ text: message.text, sourceLang, targetLang });
@@ -86,6 +87,8 @@ function AutoTranslatedMessage({ message, authUser }) {
     }
     autoTranslate();
   }, [message.text, authUser?.nativeLanguage, message.user?.nativeLanguage]);
+
+  if (!message?.text) return null;
 
   return (
     <div style={{ padding: "0.5rem 1rem" }}>
