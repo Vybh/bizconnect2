@@ -3,11 +3,18 @@ import helmet from "helmet";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import rateLimit from "express-rate-limit";
+import * as Sentry from "@sentry/node";
 
 import authRoutes from "./routes/auth.routes.js";
 import userRoutes from "./routes/user.routes.js";
 import chatRoutes from "./routes/chat.routes.js";
 import translateRoutes from "./routes/translate.routes.js";
+
+Sentry.init({
+  dsn: process.env.SENTRY_DSN,
+  environment: process.env.NODE_ENV || "development",
+  tracesSampleRate: 1.0,
+});
 
 const app = express();
 
@@ -38,5 +45,7 @@ app.use("/api/chat", chatRoutes);
 app.use("/api/translate", translateRoutes);
 
 app.use((req, res) => res.status(404).json({ message: "Route not found" }));
+
+Sentry.setupExpressErrorHandler(app);
 
 export default app;
