@@ -21,7 +21,7 @@ import toast from "react-hot-toast";
 
 const streamClient = StreamChat.getInstance(import.meta.env.VITE_STREAM_API_KEY);
 
-function TranslateButton({ message }) {
+function TranslateButton({ message, authUser }) {
   const [translated, setTranslated] = useState(null);
   const [loading, setLoading] = useState(false);
 
@@ -62,7 +62,7 @@ function TranslateButton({ message }) {
   );
 }
 
-function CustomMessage() {
+function CustomMessage({ authUser }) {
   const { message, isMyMessage } = useMessageContext();
   return (
     <div style={{ marginBottom: "0.5rem", textAlign: isMyMessage() ? "right" : "left" }}>
@@ -75,7 +75,7 @@ function CustomMessage() {
         fontSize: "0.875rem",
       }}>
         {message.text}
-        {!isMyMessage() && <TranslateButton message={message} />}
+        {!isMyMessage() && <TranslateButton message={message} authUser={authUser} />}
       </div>
     </div>
   );
@@ -152,7 +152,7 @@ export default function ChatPage() {
 
         <div className="chat-page">
           <Chat client={streamClient} theme="str-chat__theme-dark">
-            <Channel channel={channel} Message={CustomMessage}>
+            <Channel channel={channel} Message={(props) => <CustomMessage {...props} authUser={authUser} />}>
               <Window>
                 <ChannelHeader />
                 <MessageList />
