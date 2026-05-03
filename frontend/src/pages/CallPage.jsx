@@ -5,26 +5,79 @@ import {
   StreamVideo,
   StreamVideoClient,
   StreamCall,
-  CallControls,
   SpeakerLayout,
   useCallStateHooks,
 } from "@stream-io/video-react-sdk";
 import "@stream-io/video-react-sdk/dist/css/styles.css";
+import { Mic, MicOff, Video, VideoOff, PhoneOff, Monitor } from "lucide-react";
 import { getChatToken } from "../lib/api.js";
 import { useAuthUser } from "../hooks/useAuthUser.js";
 import toast from "react-hot-toast";
 
-function ActiveCall() {
-  const { useCallCallingState } = useCallStateHooks();
+function CustomCallControls() {
+  const { useMicrophoneState, useCameraState, useCallCallingState } = useCallStateHooks();
+  const { microphone, isMute: isMicMuted } = useMicrophoneState();
+  const { camera, isMute: isCamMuted } = useCameraState();
   const callingState = useCallCallingState();
 
+  async function toggleMic() {
+    try { await microphone.toggle(); } catch { toast.error("Could not toggle mic"); }
+  }
+
+  async function toggleCam() {
+    try { await camera.toggle(); } catch { toast.error("Could not toggle camera"); }
+  }
+
+  async function leaveCall() {
+    try { window.close(); } catch { window.history.back(); }
+  }
+
   return (
-    <div style={{ height: "100%", display: "flex", flexDirection: "column" }}>
-      <SpeakerLayout participantsBarPosition="bottom" />
-      <CallControls />
-      <div style={{ textAlign: "center", padding: "0.5rem", color: "var(--text-muted)", fontSize: "0.75rem" }}>
-        State: {callingState}
+    <div style={{
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "center",
+      gap: "1.5rem",
+      padding: "1.5rem",
+      background: "rgba(0,0,0,0.85)",
+    }}>
+      <button onClick={toggleMic} style={{
+        width: 56, height: 56, borderRadius: "50%",
+        background: isMicMuted ? "#ef4444" : "rgba(255,255,255,0.2)",
+        border: "none", cursor: "pointer", color: "white",
+        display: "flex", alignItems: "center", justifyContent: "center",
+      }}>
+        {isMicMuted ? <MicOff size={22} /> : <Mic size={22} />}
+      </button>
+
+      <button onClick={toggleCam} style={{
+        width: 56, height: 56, borderRadius: "50%",
+        background: isCamMuted ? "#ef4444" : "rgba(255,255,255,0.2)",
+        border: "none", cursor: "pointer", color: "white",
+        display: "flex", alignItems: "center", justifyContent: "center",
+      }}>
+        {isCamMuted ? <VideoOff size={22} /> : <Video size={22} />}
+      </button>
+
+      <button onClick={leaveCall} style={{
+        width: 56, height: 56, borderRadius: "50%",
+        background: "#ef4444",
+        border: "none", cursor: "pointer", color: "white",
+        display: "flex", alignItems: "center", justifyContent: "center",
+      }}>
+        <PhoneOff size={22} />
+      </button>
+    </div>
+  );
+}
+
+function ActiveCall() {
+  return (
+    <div style={{ height: "100vh", display: "flex", flexDirection: "column", background: "#000" }}>
+      <div style={{ flex: 1, overflow: "hidden" }}>
+        <SpeakerLayout participantsBarPosition="bottom" />
       </div>
+      <CustomCallControls />
     </div>
   );
 }
@@ -74,12 +127,10 @@ export default function CallPage() {
   }
 
   return (
-    <div className="call-page">
-      <StreamVideo client={videoClient}>
-        <StreamCall call={call}>
-          <ActiveCall />
-        </StreamCall>
-      </StreamVideo>
-    </div>
+    <StreamVideo client={videoClient}>
+      <StreamCall call={call}>
+        <ActiveCall />
+      </StreamCall>
+    </StreamVideo>
   );
 }
