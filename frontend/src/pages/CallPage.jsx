@@ -9,7 +9,7 @@ import {
   useCallStateHooks,
 } from "@stream-io/video-react-sdk";
 import "@stream-io/video-react-sdk/dist/css/styles.css";
-import { Mic, MicOff, Video, VideoOff, PhoneOff, Monitor } from "lucide-react";
+import { Mic, MicOff, Video, VideoOff, PhoneOff, MonitorUp, MonitorOff } from "lucide-react";
 import { getChatToken } from "../lib/api.js";
 import { useAuthUser } from "../hooks/useAuthUser.js";
 import toast from "react-hot-toast";
@@ -26,6 +26,13 @@ function CustomCallControls() {
 
   async function toggleCam() {
     try { await camera.toggle(); } catch { toast.error("Could not toggle camera"); }
+  }
+
+  const { useScreenShareState } = useCallStateHooks();
+  const { screenShare, isMute: isScreenOff } = useScreenShareState();
+
+  async function toggleScreen() {
+    try { await screenShare.toggle(); } catch { toast.error("Could not toggle screen share"); }
   }
 
   async function leaveCall() {
@@ -57,6 +64,15 @@ function CustomCallControls() {
         display: "flex", alignItems: "center", justifyContent: "center",
       }}>
         {isCamMuted ? <VideoOff size={22} /> : <Video size={22} />}
+      </button>
+
+      <button onClick={toggleScreen} style={{
+        width: 56, height: 56, borderRadius: "50%",
+        background: !isScreenOff ? "#3b82f6" : "rgba(255,255,255,0.2)",
+        border: "none", cursor: "pointer", color: "white",
+        display: "flex", alignItems: "center", justifyContent: "center",
+      }}>
+        {!isScreenOff ? <MonitorOff size={22} /> : <MonitorUp size={22} />}
       </button>
 
       <button onClick={leaveCall} style={{
