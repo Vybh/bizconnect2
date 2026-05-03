@@ -32,7 +32,7 @@ function TranslateButton({ message }) {
       const res = await translateText({
         text: message.text,
         sourceLang: "en",
-        targetLang: navigator.language?.split("-")[0] || "en",
+        targetLang: authUser?.learningLanguage || "en",
       });
       setTranslated(res.data.translatedText);
     } catch {
